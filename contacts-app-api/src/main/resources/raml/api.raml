@@ -1,0 +1,91 @@
+#%RAML 0.8
+title: Contacts App
+version: v1
+baseUri: http://localhost:4433/
+
+schemas:
+  - apiCreatedEntity: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "javaType": "com.ricston.blog.contactsapp.rest.api.model.ApiCreatedEntity",
+         "type": "object",
+         "description": "Response JSON for successful POST operation",
+         "properties": {
+           "id":  { "type": "string", "required": true }
+         }
+      }
+  - apiContact: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "javaType": "com.ricston.blog.contactsapp.rest.api.model.ApiContact",
+         "type": "object",
+         "description": "A single apiContact",
+         "properties": {
+           "id":  { "type": "string", "required": true },
+           "name":  { "type": "string", "required": true },
+           "email":  { "type": "string" }
+         }
+      }
+  - apiContacts: |
+      {  "$schema": "http://json-schema.org/draft-03/schema",
+         "javaType": "com.ricston.blog.contactsapp.rest.api.model.ApiContacts",
+         "type": "object",
+         "description": "A object containing an array of apiContact",
+         "properties": {
+           "size": { "type": "integer", "required": true },
+           "contacts": {
+             "type": "array",
+             "items": { "$ref": "apiContact" }
+           }
+         }
+      }
+
+/contacts:
+  # note, changing the displayName will change the name of the generated class in ${base.package.name}.resource
+  displayName: Contacts
+  get:
+    description: Retrieves an array of contacts
+    responses:
+      200:
+        body:
+          application/json:
+            schema: apiContacts
+      400:
+        description: Bad Request
+      500:
+        description: Internal Server Error
+  /{id}:
+    get:
+      description: Retrieves specific contact by id
+      responses:
+        200:
+          body:
+            application/json:
+              schema: apiContact
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+  post:
+      description: Creates a new contact
+      body:
+        application/x-www-form-urlencoded:
+          formParameters:
+            name:
+              description: The name of the contact
+              type: string
+              required: true
+            email:
+              description: The email of the contact
+              type: string
+              required: false
+      responses:
+        200:
+          description: The contact has been created
+          body:
+            application/json:
+              schema: apiCreatedEntity
+        400:
+          description: Bad Request
+        500:
+          description: Internal Server Error
+          body:
+            text/plain:
