@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<!--<java.version>1.7</java.version>-->
+		<!--<java.version>1.7</java.version> -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<base.package.name>com.ricston.blog.contactsapp.rest.api</base.package.name>
 	</properties>
@@ -28,6 +28,11 @@
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
 			<version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.raml</groupId>
+			<artifactId>raml-jaxrs-codegen-core</artifactId>
+			<version>1.0.OA-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>
@@ -48,7 +53,10 @@
 			<plugin>
 				<groupId>org.raml.plugins</groupId>
 				<artifactId>raml-jaxrs-maven-plugin</artifactId>
-				<version>1.0-SNAPSHOT</version>
+				<version>1.0.OA-SNAPSHOT</version>
+				<!-- <groupId>org.raml.plugins</groupId> -->
+				<!-- <artifactId>raml-jaxrs-maven-plugin</artifactId> -->
+				<!-- <version>1.0-SNAPSHOT</version> -->
 				<configuration>
 					<!-- Use sourcePaths if you want to provide a single RAML file or a 
 						list of RAML files -->
@@ -75,4 +83,21 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<repositories>
+		<repository>
+			<id>openanalytics</id>
+			<name>Open Analytics</name>
+			<url>http://nexus.openanalytics.eu/nexus/content/groups/public</url>
+			<layout>default</layout>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>openanalytics</id>
+			<name>Open Analytics</name>
+			<url>http://nexus.openanalytics.eu/nexus/content/groups/public</url>
+		</pluginRepository>
+	</pluginRepositories>
+
 </project>
