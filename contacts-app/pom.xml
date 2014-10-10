@@ -12,6 +12,7 @@
 	<modules>
 		<module>../contacts-app-api/</module>
 		<module>../contacts-app-impl/</module>
+		<module>contacts-app-server/</module>
 	</modules>
 
 </project>

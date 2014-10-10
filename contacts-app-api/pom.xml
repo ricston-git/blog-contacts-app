@@ -27,7 +27,7 @@
 			<groupId>org.raml</groupId>
 			<artifactId>raml-jaxrs-codegen-core</artifactId>
 			<version>1.0.OA-SNAPSHOT</version>
-            <scope>provided</scope>
+            <!-- <scope>provided</scope> -->
 		</dependency>
 	</dependencies>
 	<build>
