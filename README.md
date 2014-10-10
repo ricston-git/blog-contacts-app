@@ -3,19 +3,19 @@ blog-contacts-app
 
 ## To Jar hell and back
 
-This blog post builds on the following: [RAML code generation](http://ricston.com/blog/raml-code-generation/)
+In this blog post we'll be using [JHades](http://jhades.org/) to troubleshoot problems in our classpath. JHades is a powerful tool that can give us useful information when trying to resolve a [certain set of problems](http://blog.jhades.org/classnotfoundexception-jhades-jar-hell-made-easy/) in Java development.
+
+The demo behind this blog post builds on the following: [RAML code generation](http://ricston.com/blog/raml-code-generation/)
 
 It has nothing to do with RAML per se. I'll just be using and continuing from the [demo](https://github.com/ricston-git/blog-contacts-app) introduced in that blog post (note that each post's "resulting" project state is in its own branch).
 
-So what's this post about? Jar hell? Well yes, just a small example of coming across a Jar hell symptom and trouble shooting it. You might be interested in reading this [post](http://blog.jhades.org/classnotfoundexception-jhades-jar-hell-made-easy/) if you're not sure what I'm talking about.
-
-Ok, first thing's first - if we're going to do any trouble shooting, we need to get into trouble ;)
+Ok, so before we can get to the meat of things, we need a problem to troubleshoot.
 
 Go ahead and `git clone https://github.com/ricston-git/blog-contacts-app && git checkout raml-code-generation` (this is the demo behind the previous post). Now, cd into contacts-app and `mvn install`. Cd into contacts-app-impl and `mvn exec:java -Dexec.mainClass="com.ricston.contacts.Main"`. If your JAVA_HOME env variable is pointing to a Java 6 installation you'll get: Unsupported major.minor version 51.0. This is because I upgraded Jersey to 2.13 - so you'll want to point it to your Java 7 home directory. You should then see `Server listening on port 4433` - indicating that our server is running and we can hit it with requests as defined in our RAML file.
 
 So... no trouble - app works fine. That's because you're using the fixed version :)
 
-What you'll want to do to follow along is to open up contacts-app-api's pom.xml and remove the scope of provided on the raml-jaxrs-codegen-core dependency. That (and a couple of other unnecessary things) was the state of the project when I started working on the demo code behind the blog post I was going to write originally. What actually happened was that I was able to continue working without facing this problem for quite a while because I was running the program from within my IDE. I had set up another Maven module with war packaging, transfered the configuration from the Main.java over to a web.xml deployment descriptor and fired things up with no problem in my IDE. It was only when I tried running the project from Maven using the Tomcat plugin - `mvn clean tomcat7:run` that I ran into the following exception. This exception is the same one you'll get at this point if you mvn install everything again and run as you just did (only this time you should have the default scope of compile on the raml-jaxrs-codegen-core dependency):
+What you'll want to do to follow along is to open up contacts-app-api's pom.xml and remove the scope of provided on the raml-jaxrs-codegen-core dependency. That (and a couple of other unnecessary things) was the state of the project when I started working on the demo code behind the blog post which I was going to write originally (then I ended up writing this one). What actually happened was that I was able to continue working without facing this problem for quite a while because I was running the program from within my IDE. I had set up another Maven module with war packaging, transferred the configuration from the Main.java over to a web.xml deployment descriptor and fired things up with no problem in my IDE. It was only when I tried running the project from Maven using the Tomcat plugin - `mvn clean tomcat7:run` that I ran into the following exception. This exception is the same one you'll get at this point if you mvn install everything again and run as you just did (only this time you should have the default scope of compile on the raml-jaxrs-codegen-core dependency):
 
 ```
 java.lang.reflect.InvocationTargetException
