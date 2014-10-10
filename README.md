@@ -11,7 +11,7 @@ It has nothing to do with RAML per se. I'll just be using and continuing from th
 
 Ok, so before we can get to the meat of things, we need a problem to troubleshoot.
 
-Go ahead and `git clone https://github.com/ricston-git/blog-contacts-app && git checkout raml-code-generation` (this is the demo behind the previous post). Now, cd into contacts-app and `mvn install`. Cd into contacts-app-impl and `mvn exec:java -Dexec.mainClass="com.ricston.contacts.Main"`. If your JAVA_HOME env variable is pointing to a Java 6 installation you'll get: Unsupported major.minor version 51.0. This is because I upgraded Jersey to 2.13 - so you'll want to point it to your Java 7 home directory. You should then see `Server listening on port 4433` - indicating that our server is running and we can hit it with requests as defined in our RAML file.
+Go ahead and `git clone https://github.com/ricston-git/blog-contacts-app && cd blog-contacts-app && git checkout raml-code-generation` (this is the demo behind the previous post). Now, cd into contacts-app and `mvn install`. Cd into contacts-app-impl and `mvn exec:java -Dexec.mainClass="com.ricston.contacts.Main"`. If your JAVA_HOME env variable is pointing to a Java 6 installation you'll get: Unsupported major.minor version 51.0. This is because I upgraded Jersey to 2.13 - so you'll want to point it to your Java 7 home directory. You should then see `Server listening on port 4433` - indicating that our server is running and we can hit it with requests as defined in our RAML file.
 
 So... no trouble - app works fine. That's because you're using the fixed version :)
 
@@ -54,7 +54,7 @@ Ok, so now we're in trouble. Obviously, we can't just rely on chance, hoping the
 
 What we really need here is more information. It would be great if the NoSuchMethodError would also have given us the location of the jar from which the javax.ws.rs.core.Application class was being loaded when things crashed. We don't get that but we can use a tool called [JHades](http://jhades.org/) to let us know if we have duplicate classes in the jars in our classpath. That information will practically solve this issue.
 
-Go ahead and add jhades (not jhades-standalone-report) to contacts-app-impl's pom (use latest version from [here](http://jhades.org/downloads.html):
+Go ahead and add jhades (not jhades-standalone-report) to contacts-app-impl's pom - use latest version from [here](http://jhades.org/downloads.html):
 
 ```
 <dependency>
@@ -77,11 +77,11 @@ file:/Users/justin/.m2/repository/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.
 file:/Users/justin/.m2/repository/javax/ws/rs/javax.ws.rs-api/2.0/javax.ws.rs-api-2.0.jar - total overlapping classes: 55 - same classloader ! This is an ERROR!
 ```
 
-We know from the error message that the problematic class is javax.ws.rs.core.Application, so it makes sense to focus on the clash involving jsr311-api-1.1.1.jar and javax.ws.rs.api-2.0.jar. Sure enough, if we open up the javax.ws.rs.core.Application class in both of these jars (may I suggest Vim :)) we can see that the one in jsr311-api-1.1.1.jar does *not* have the getProperties() method which our code is trying to use. The one in javax.ws.rs.api-2.0.jar does. Note, if you don't have the sources in your local repo, you should be able to get them by running `mvn dependency:sources` in the contacts-app parent module's directory.
+We know from the error message that the problematic class is javax.ws.rs.core.Application, so it makes sense to focus on the clash involving jsr311-api-1.1.1.jar and javax.ws.rs.api-2.0.jar. Sure enough, if we open up the javax.ws.rs.core.Application class in both of these jars, we can see that the one in jsr311-api-1.1.1.jar does *not* have the getProperties() method which our code is trying to use. The one in javax.ws.rs.api-2.0.jar does. Note, if you don't have the sources in your local repo, you should be able to get them by running `mvn dependency:sources` in the contacts-app parent module's directory.
 
 Finally, we're almost at the root of the problem here. The final piece of the puzzle is figuring out what's pulling in jsr311-api-1.1.1.jar and removing it. Since we actually started with the solution, you already know that contacts-app-api's dependency on raml-jaxrs-codegen-core is pulling in jsr311-api-1.1.1.jar - but assuming you didn't, how would you go about it?
 
-What I did was simply dump out the output of `mvn dependency:tree` into a temporary file: `mvn dependency:tree >> dependency-tree` and search for jsr311 (or maybe grep for it with some context e.g. `mvn dependency:tree | grep -C 20 jsr311` if you don't want to stay creating a file). Either way, we get the info we wanted:
+What I did was simply dump out the output of `mvn dependency:tree` into a temporary file: `mvn dependency:tree >> dependency-tree` and search for jsr311 (or maybe grep for it with some context e.g. `mvn dependency:tree | grep -C 20 jsr311` if you don't want to stay creating a file). Either way, we get the info we need:
 
 ```
 [INFO] +- com.ricston:contacts-app-api:jar:1.0.0-SNAPSHOT:compile
@@ -99,7 +99,7 @@ What I did was simply dump out the output of `mvn dependency:tree` into a tempor
 [INFO] |     +- javax.ws.rs:jsr311-api:jar:1.1.1:compile
 ```
 
-The code generator is pulling in the jar we want out, and come to think of it, it really makes no sense to include the raml-jaxrs-codegen-core as a dependency which is carried over when contacts-app-api is dependend upon in another project. The code generator is only used to generate code, to build our contacts-app-api. It is not something we need at runtime. Therefore, using the scope of provided on the code generator will have the effect we're after, to include the dependency while building contacts-app-api but not when depending on it from another module.
+The code generator is pulling in the jar we want out, and come to think of it, it really makes no sense to include the raml-jaxrs-codegen-core as a dependency which is carried over when contacts-app-api is depended upon in another project. The code generator is only used to generate code - i.e. to build our contacts-app-api. It is not something we need at runtime. Therefore, using the scope of provided on the code generator will have the effect we're after, to include the dependency while building contacts-app-api but not when depending on it from another module.
 
 What I'd like to quickly demo now is how to use JHades in other scenarios. Let's replicate the issue we are having here in the context of a war Maven module, where we don't have the luxury of simply dropping in some code to print out the overlapping jars.
 
@@ -154,7 +154,7 @@ java.lang.ClassCastException: org.glassfish.jersey.servlet.ServletContainer cann
 
 This is actually an error which has nothing to do with what we're concerned with. I am not entirely sure why but the Jetty dependencies we have in contacts-app-impl are causing this. I am able to open up the ServletContainer in my IDE and see that the HttpServlet it's extending is being picked up from a jar with Maven coordinates: org.eclipse.jetty.orbit:javax.servlet:3.0.0.v201112011016 - (looks like one crazy version number).
 
-Anyway, we will not be using Main.java to host our web app so go ahead and delete it along with the jetty dependencies in contacts-app-impl's pom.xml. Then you should be able to run tomcat from maven again and get the NoSuchMethodError from before.
+Anyway, we will not be using Main.java to host our web app so go ahead and delete it along with the Jetty dependencies in contacts-app-impl's pom.xml. Then you should be able to run tomcat from maven again and get the NoSuchMethodError from before.
 
 In order to get the info we need here, we have two options (at least I know of 2 options). We can either drop in the dependency on JHades as we did before and add the following to our web.xml (at the start):
 
@@ -178,6 +178,6 @@ Either way, you'll be able to get to the same conclusion as before with the outp
 
 I will eventually come round to writing the blog post I initially had in mind (this one just kind of developed while trying to go for something else). Tune in again next time for yet another module we'll be adding to this project :)
 
-We will go through setting up a front-end module using [Yeoman](http://yeoman.io/) (using the backbone generator) - build our project with Grunt from Maven and depend on our shiny new front-end module from our contacts-app-server.
+Next time we will be going through setting up a front-end module using [Yeoman](http://yeoman.io/) (using the backbone generator) - build our project with Grunt from Maven and depend on our shiny new front-end module from our contacts-app-server.
 
 Until next time :)
