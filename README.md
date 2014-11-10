@@ -10,3 +10,5 @@ Switch to other branches for state of project after given blog post.
 Relevant blog posts (in order written):
 
 1. [RAML code generation](http://ricston.com/blog/raml-code-generation/)
+2. [To Jar hell and back](http://ricston.com/blog/jar-hell/)
+
