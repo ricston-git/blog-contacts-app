@@ -20,10 +20,10 @@ public class ContactsResource implements Contacts {
 			
 			ApiContacts apiContacts = ds.getContacts();
 
-			return GetContactsResponse.jsonOK(apiContacts);
+			return GetContactsResponse.withJsonOK(apiContacts);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return GetContactsResponse.internalServerError();
+			return GetContactsResponse.withInternalServerError();
 		}
 	}
 
@@ -41,14 +41,14 @@ public class ContactsResource implements Contacts {
 			apiContact.setName(contact.getName());
 			apiContact.setEmail(contact.getEmail());
 
-			return GetContactsByIdResponse.jsonOK(apiContact);
+			return GetContactsByIdResponse.withJsonOK(apiContact);
 
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
-			return GetContactsByIdResponse.badRequest();
+			return GetContactsByIdResponse.withBadRequest();
 		} catch (Exception e) {
 			e.printStackTrace();
-			return GetContactsByIdResponse.internalServerError();
+			return GetContactsByIdResponse.withInternalServerError();
 		}
 	}
 
@@ -66,11 +66,11 @@ public class ContactsResource implements Contacts {
 			ApiCreatedEntity apiCreatedEntity = new ApiCreatedEntity();
 			apiCreatedEntity.setId("" + id);
 
-			return PostContactsResponse.jsonOK(apiCreatedEntity);
+			return PostContactsResponse.withJsonOK(apiCreatedEntity);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return PostContactsResponse
-					.plainInternalServerError("Could not create new contact with name: "
+					.withPlainInternalServerError("Could not create new contact with name: "
 							+ name + ", email: " + email);
 		}
 	}
